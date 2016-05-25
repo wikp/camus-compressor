@@ -45,11 +45,11 @@ public class CamusCompressorTest {
         when(fileSystem.listStatus(new Path("camus_dir"))).thenReturn(topics);
 
         // when
-        camusCompressor.compressAll("camus_dir");
+        camusCompressor.compress("camus_dir");
 
         // then
-        verify(topicCompressor).compressTopic(new Path(PATH_PREFIX + "topic1"));
-        verify(topicCompressor).compressTopic(new Path(PATH_PREFIX + "topic2"));
+        verify(topicCompressor).compress(new Path(PATH_PREFIX + "topic1"));
+        verify(topicCompressor).compress(new Path(PATH_PREFIX + "topic2"));
         verifyNoMoreInteractions(topicCompressor);
     }
 

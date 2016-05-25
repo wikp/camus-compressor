@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hadoop.compressor.unit.UnitCompressor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TopicCompressorTest {
@@ -48,11 +49,11 @@ public class TopicCompressorTest {
         when(fileSystem.globStatus(new Path("topic_dir/daily/*/*/*"))).thenReturn(EMPTY_STATUSES);
 
         // when
-        topicCompressor.compressTopic("topic_dir");
+        topicCompressor.compress("topic_dir");
 
         // then
-        verify(unitCompressor).compressUnit(hour1);
-        verify(unitCompressor).compressUnit(hour2);
+        verify(unitCompressor).compress(hour1);
+        verify(unitCompressor).compress(hour2);
         verifyNoMoreInteractions(unitCompressor);
 
     }
@@ -68,11 +69,11 @@ public class TopicCompressorTest {
         });
 
         // when
-        topicCompressor.compressTopic("topic_dir");
+        topicCompressor.compress("topic_dir");
 
         // then
-        verify(unitCompressor).compressUnit(day1);
-        verify(unitCompressor).compressUnit(day2);
+        verify(unitCompressor).compress(day1);
+        verify(unitCompressor).compress(day2);
         verifyNoMoreInteractions(unitCompressor);
 
     }
@@ -88,7 +89,7 @@ public class TopicCompressorTest {
         when(fileSystem.globStatus(new Path("topic_dir/daily/*/*/*"))).thenReturn(EMPTY_STATUSES);
 
         // when
-        topicCompressor.compressTopic("topic_dir");
+        topicCompressor.compress("topic_dir");
 
         // then
         verifyZeroInteractions(unitCompressor);
@@ -109,10 +110,10 @@ public class TopicCompressorTest {
         });
 
         // when
-        topicCompressor.compressTopic(base);
+        topicCompressor.compress(base);
 
         // then
-        verify(unitCompressor).compressUnit(new Path(String.format("%s/%s", base, yesterdayDir)));
+        verify(unitCompressor).compress(new Path(String.format("%s/%s", base, yesterdayDir)));
         verifyNoMoreInteractions(unitCompressor);
     }
 

@@ -63,20 +63,23 @@ repositories {
     }
 }
 dependencies {
-    provided ('org.apache.spark:spark-core_2.10:1.2.0')
+    provided ('org.apache.spark:spark-core_2.10:1.6.1')
+    provided ('org.apache.spark:spark-sql_2.10:1.6.1')
     provided 'org.scala-lang:scala-library:2.10.2'
     provided ('org.apache.hadoop:hadoop-hdfs:2.5.0') {
         exclude group: 'javax.servlet'
     }
-    
+
     compile 'com.hadoop.gplcompression:hadoop-lzo:0.4.19'
-    
+    compile 'com.databricks:spark-avro_2.10:2.0.1'
+
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'junit:junit:4.11'
-	testCompile ('org.apache.hadoop:hadoop-hdfs:2.5.0:tests') {
+    testCompile 'org.apache.spark:spark-sql_2.10:1.6.1'
+	testCompile ('org.apache.hadoop:hadoop-hdfs:2.6.0:tests') {
         exclude group: 'javax.servlet'
     }
-	testCompile ('org.apache.hadoop:hadoop-common:2.5.0:tests') {
+	testCompile ('org.apache.hadoop:hadoop-common:2.6.0:tests') {
         exclude group: 'javax.servlet'
     }
 }
@@ -84,6 +87,7 @@ dependencies {
 
 configurations {
     runtime.exclude module: 'spark-core_2.10'
+    runtime.exclude module: 'spark-sql_2.10'
     runtime.exclude module: 'scala-library'
     runtime.exclude module: 'hadoop-hdfs'
 }
@@ -143,7 +147,7 @@ task integration(type: Test) {
     classpath = project.sourceSets.main.output +
        project.sourceSets.integration.output +
        sourceSets.test.compileClasspath
-    
+
     dependsOn integrationClasses
 }
 

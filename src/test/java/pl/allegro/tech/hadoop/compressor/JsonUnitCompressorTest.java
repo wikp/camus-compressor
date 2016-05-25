@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.DataFrame;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +30,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
+import pl.allegro.tech.hadoop.compressor.unit.JsonUnitCompressor;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UnitCompressorTest {
+public class JsonUnitCompressorTest {
 
     @Mock
     private JavaSparkContext sparkContext;
@@ -42,7 +44,7 @@ public class UnitCompressorTest {
     @Mock
     private Compression compression;
 
-    private UnitCompressor unitCompressor;
+    private JsonUnitCompressor unitCompressor;
 
     @Mock
     private JavaRDD<String> testRDD;
@@ -50,7 +52,7 @@ public class UnitCompressorTest {
     @Before
     public void setUp() {
         InputAnalyser analyser = new InputAnalyser(fileSystem, compression, false);
-        unitCompressor = new UnitCompressor(sparkContext, fileSystem, compression, analyser);
+        unitCompressor = new JsonUnitCompressor(sparkContext, fileSystem, compression, analyser);
     }
 
     @Test
@@ -63,7 +65,7 @@ public class UnitCompressorTest {
         when(compression.getSplits(anyLong())).thenReturn(TEST_NUM_SPLITS);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression).compress(same(testRDD), anyString());
@@ -76,7 +78,7 @@ public class UnitCompressorTest {
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression, never()).compress(any(JavaRDD.class), anyString());
@@ -89,7 +91,7 @@ public class UnitCompressorTest {
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression, never()).compress(any(JavaRDD.class), anyString());
@@ -102,7 +104,7 @@ public class UnitCompressorTest {
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression, never()).compress(any(JavaRDD.class), anyString());
@@ -116,7 +118,7 @@ public class UnitCompressorTest {
         when(fileSystem.exists(any(Path.class))).thenReturn(true);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression, never()).compress(any(JavaRDD.class), anyString());
@@ -148,7 +150,7 @@ public class UnitCompressorTest {
         });
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
         verify(compression).compress(same(testRDD), anyString());
