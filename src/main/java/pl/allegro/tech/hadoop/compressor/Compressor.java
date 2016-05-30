@@ -36,7 +36,7 @@ public final class Compressor {
 
     private Compressor() { }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String... args) throws IOException {
         compressorOptions = new CompressorOptions(args);
         logger.info("Camus compressor spawned with: " + compressorOptions);
         init();

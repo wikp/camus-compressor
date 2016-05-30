@@ -1,4 +1,22 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.unit;
+
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import pl.allegro.tech.hadoop.compressor.InputAnalyser;
+import pl.allegro.tech.hadoop.compressor.compression.Compression;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
@@ -11,26 +29,8 @@ import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.DataFrame;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import pl.allegro.tech.hadoop.compressor.compression.Compression;
-import pl.allegro.tech.hadoop.compressor.unit.JsonUnitCompressor;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForEmptyFile;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonUnitCompressorTest {
@@ -44,10 +44,10 @@ public class JsonUnitCompressorTest {
     @Mock
     private Compression compression;
 
-    private JsonUnitCompressor unitCompressor;
-
     @Mock
     private JavaRDD<String> testRDD;
+
+    private UnitCompressor unitCompressor;
 
     @Before
     public void setUp() {
@@ -69,6 +69,32 @@ public class JsonUnitCompressorTest {
 
         // then
         verify(compression).compress(same(testRDD), anyString());
+    }
+
+    @Test
+    public void shouldContinueWhenSuccessFileNotExists() throws Exception {
+        // given
+        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
+        when(testRDD.repartition(anyInt())).thenReturn(testRDD);
+        when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
+        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
+        when(compression.getSplits(anyLong())).thenReturn(TEST_NUM_SPLITS);
+
+        when(fileSystem.exists(any(Path.class))).thenAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                return !isSuccessFile((Path) args[0]);
+            }
+        });
+
+        // when
+        unitCompressor.compress(UNIT_PATH);
+
+        // then
+        verify(compression).compress(same(testRDD), anyString());
+        verifyCleanup();
+        verify(fileSystem).delete(not(eq(UNIT_PATH)), eq(true));
     }
 
     @Test
@@ -132,37 +158,8 @@ public class JsonUnitCompressorTest {
         assertTrue(isSuccessFile(pathCaptor.getValue()));
     }
 
-    @Test
-    public void shouldContinueWhenSuccessFileNotExists() throws Exception {
-        // given
-        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
-        when(testRDD.repartition(anyInt())).thenReturn(testRDD);
-        when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
-        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
-        when(compression.getSplits(anyLong())).thenReturn(TEST_NUM_SPLITS);
-
-        when(fileSystem.exists(any(Path.class))).thenAnswer(new Answer<Boolean>() {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                return !isSuccessFile((Path) args[0]);
-            }
-        });
-
-        // when
-        unitCompressor.compress(UNIT_PATH);
-
-        // then
-        verify(compression).compress(same(testRDD), anyString());
-        verifyCleanup();
-        verify(fileSystem).delete(not(eq(UNIT_PATH)), eq(true));
-    }
-
     private boolean isSuccessFile(Path path) {
-        if (path.toString().endsWith("_SUCCESS")) {
-            return true;
-        }
-        return false;
+        return path.toString().endsWith("_SUCCESS");
     }
 
     private static final String COMPRESSED_EXTENSION = "ext";
@@ -183,11 +180,4 @@ public class JsonUnitCompressorTest {
     private static final FileStatus[] EMPTY_STATUSES = {};
 
 
-    private static final FileStatus fileStatusForPath(Path path) {
-        return new FileStatus(10L, true, 3, 1024L, 100L, path);
-    }
-
-    private static final FileStatus fileStatusForEmptyFile(Path path) {
-        return new FileStatus(0L, true, 3, 1024L, 100L, path);
-    }
 }

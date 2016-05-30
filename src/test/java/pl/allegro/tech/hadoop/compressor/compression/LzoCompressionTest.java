@@ -6,6 +6,8 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
 
 import java.lang.reflect.Field;
 
@@ -20,7 +22,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -32,6 +33,7 @@ import com.hadoop.compression.lzo.LzopCodec;
 @RunWith(MockitoJUnitRunner.class)
 public class LzoCompressionTest {
 
+    private static final Logger logger = Logger.getLogger(LzoCompressionTest.class);
     private static final String OUTPUT_DIR_NAME = "output_dir_test";
     private static final Path OUTPUT_PATH = new Path(OUTPUT_DIR_NAME);
     private static final Path COMPRESSED_FILE_PATH = OUTPUT_PATH.suffix("file.lzo");
@@ -40,8 +42,7 @@ public class LzoCompressionTest {
                                                             fileStatusForPath(SECOND_COMPRESSED_FILE_PATH)};
     private static final String CODEC_SUBSTRING = LzoCodec.class.getName();
 
-    public static final Logger logger = Logger.getLogger(LzoCompressionTest.class);
-    private static final String INPUT_FILE_NAME = "test_file";
+    private static final String INPUT_FILE = "test_file";
 
     @Mock
     private Configuration configuration;
@@ -95,18 +96,6 @@ public class LzoCompressionTest {
 
     @Test
     public void shouldDecompressLzoFiles() throws Exception {
-        // when
-        lzoCompression.decompress(INPUT_FILE_NAME);
-
-        // then
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(sparkContext).textFile(captor.capture());
-        assertTrue(captor.getValue().startsWith(INPUT_FILE_NAME));
-        assertTrue(captor.getValue().endsWith(lzoCompression.getExtension()));
-
-    }
-
-    private static final FileStatus fileStatusForPath(Path path) {
-        return new FileStatus(10L, true, 3, 1024L, 100L, path);
+        checkDecompress(INPUT_FILE, lzoCompression, sparkContext);
     }
 }

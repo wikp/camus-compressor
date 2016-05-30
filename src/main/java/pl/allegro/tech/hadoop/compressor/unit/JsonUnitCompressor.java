@@ -8,7 +8,8 @@ import pl.allegro.tech.hadoop.compressor.compression.Compression;
 
 import java.io.IOException;
 
-public class JsonUnitCompressor extends UnitCompressor {
+public class
+JsonUnitCompressor extends UnitCompressor {
     private final JavaSparkContext context;
     private final Compression compression;
 

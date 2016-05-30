@@ -4,12 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -20,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.junit.runner.RunWith;
 import pl.allegro.tech.hadoop.compressor.util.FileSystemUtils;
 
 public class CompressorIntegrationTest {
@@ -33,30 +36,49 @@ public class CompressorIntegrationTest {
     private String todayPath;
     private String pastDayPath;
 
-    @Test
-    public void shouldPerformCompression() throws Exception {
+    /*@Test
+    public void shouldPerformJsonCompression() throws Exception {
         // given
         prepareData();
 
         // when
-        Compressor.main(new String[] { "all", hdfsURI + "camus_main_dir", "none", "1", "json"});
+        Compressor.main("all", hdfsURI + "camus_main_dir", "none", "1", "json");
 
         // then
         checkUncompressed("/camus_main_dir/topic1/daily/" + todayPath + "/file1");
         checkUncompressed("/camus_main_dir/topic1/daily/" + todayPath + "/file2");
         checkUncompressed("/camus_main_dir/topic1/daily/" + todayPath + "/file3");
-        checkCompressed("/camus_main_dir/topic1/daily/" + pastDayPath + "/*");
+        checkCompressed("/camus_main_dir/topic1/daily/" + pastDayPath + "*//*");
 
         checkUncompressed("/camus_main_dir/topic2/hourly/" + todayPath + "/12/file1");
         checkUncompressed("/camus_main_dir/topic2/hourly/" + todayPath + "/12/file2");
         checkUncompressed("/camus_main_dir/topic2/hourly/" + todayPath + "/12/file3");
-        checkCompressed("/camus_main_dir/topic2/hourly/" + pastDayPath + "/12/*");
+        checkCompressed("/camus_main_dir/topic2/hourly/" + pastDayPath + "/12*//*");
+    }*/
+
+    @Test
+    public void shouldPerformAvroCompression() throws Exception {
+        // given
+        prepareAvroData();
+
+        // when
+        Compressor.main("all", hdfsURI + "camus_main_avro_dir", "none", "1", "avro");
+
+        // then
+        checkUncompressed(490L, "/camus_main_avro_dir/topic1/daily/" + todayPath + "/file1.avro");
+        checkUncompressed(494L, "/camus_main_avro_dir/topic1/daily/" + todayPath + "/file2.avro");
+        checkCompressed(548L, "/camus_main_avro_dir/topic1/daily/" + pastDayPath + "*//*");
+
+        checkUncompressed(490L, "/camus_main_avro_dir/topic2/hourly/" + todayPath + "/12/file1.avro");
+        checkUncompressed(494L, "/camus_main_avro_dir/topic2/hourly/" + todayPath + "/12/file2.avro");
+//        checkCompressed(548L, "/camus_main_avro_dir/topic2/hourly/" + pastDayPath + "/12*//*");
     }
 
     @Before
     public void setUp() throws IOException {
         System.setProperty("spark.master", "local");
         System.setProperty("spark.executor.instances", "1");
+        System.setProperty("spark.driver.allowMultipleContexts", "true");
         baseDir = Files.createTempDirectory("hdfs").toFile();
         FileUtil.fullyDelete(baseDir);
 
@@ -92,11 +114,35 @@ public class CompressorIntegrationTest {
         fillWithData("/camus_main_dir/topic2/hourly/" + pastDayPath + "/12");
     }
 
+    private void prepareAvroData() throws Exception {
+        fileSystem.mkdirs(new Path("/camus_main_avro_dir"));
+
+        todayPath = new SimpleDateFormat("yyyy/MM/dd").format(new Date());
+        pastDayPath = "2015/01/01";
+
+        fillWithAvroData("/camus_main_avro_dir/topic1/daily/" + todayPath);
+        fillWithAvroData("/camus_main_avro_dir/topic1/daily/" + pastDayPath);
+        fillWithAvroData("/camus_main_avro_dir/topic2/hourly/" + todayPath + "/12");
+        fillWithAvroData("/camus_main_avro_dir/topic2/hourly/" + pastDayPath + "/12");
+    }
+
     private void fillWithData(String path) throws Exception {
         fileSystem.mkdirs(new Path(path));
         putSampleData(path + "/file1");
         putSampleData(path + "/file2");
         putSampleData(path + "/file3");
+    }
+
+    private void fillWithAvroData(String path) throws Exception {
+        fileSystem.mkdirs(new Path(path));
+        putAvroFile(path + "/file1.avro", "twitter-1.avro");
+        putAvroFile(path + "/file2.avro", "twitter-2.avro");
+    }
+
+    private void putAvroFile(String path, String localPath) throws IOException {
+        final FSDataOutputStream outputStream = fileSystem.create(new Path(path));
+        outputStream.write(IOUtils.toByteArray(getClass().getClassLoader().getResourceAsStream(localPath)));
+        outputStream.close();
     }
 
     private void putSampleData(String path) throws Exception {
@@ -106,12 +152,20 @@ public class CompressorIntegrationTest {
     }
 
     private void checkCompressed(String path) throws Exception {
-        assertEquals(COMPRESSED_SIZE, fileSystem.globStatus(new Path(path))[0].getLen());
+        checkCompressed(COMPRESSED_SIZE, path);
+    }
 
+    private void checkCompressed(long size, String path) throws Exception {
+        fileSystem.copyToLocalFile(new Path("/camus_main_avro_dir/topic1/daily/" + pastDayPath), new Path("/tmp/dupa"));
+        assertEquals(size, fileSystem.globStatus(new Path(path))[0].getLen());
     }
 
     private void checkUncompressed(String path) throws Exception {
-        assertEquals(UNCOMPRESSED_SIZE, fileSystem.globStatus(new Path(path))[0].getLen());
+        checkUncompressed(UNCOMPRESSED_SIZE, path);
+    }
+
+    private void checkUncompressed(long size, String path) throws Exception {
+        assertEquals(size, fileSystem.globStatus(new Path(path))[0].getLen());
     }
 
 }

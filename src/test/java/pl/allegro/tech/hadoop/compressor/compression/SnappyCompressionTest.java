@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -53,16 +54,7 @@ public class SnappyCompressionTest {
 
     @Test
     public void shouldDecompressSnappyFiles() throws Exception {
-        // when
-        snappyCompression.decompress(INPUT_FILE);
-
-        // then
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(sparkContext).textFile(captor.capture());
-
-        assertTrue(captor.getValue().startsWith(INPUT_FILE));
-        assertTrue(captor.getValue().endsWith(snappyCompression.getExtension()));
-
+        checkDecompress(INPUT_FILE, snappyCompression, sparkContext);
     }
 
     @Test

@@ -31,6 +31,12 @@ shadowJar {
     mergeServiceFiles()
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
+    dependencies {
+        exclude(dependency('org.apache.spark:spark-core_2.10:1.6.1'))
+        exclude(dependency('org.apache.spark:spark-sql_2.10:1.6.1'))
+        exclude(dependency('org.scala-lang:scala-library:2.10.2'))
+        exclude(dependency('org.apache.hadoop:hadoop-hdfs:2.6.0'))
+    }
 }
 
 sourceCompatibility = 1.7
@@ -63,10 +69,12 @@ repositories {
     }
 }
 dependencies {
-    provided ('org.apache.spark:spark-core_2.10:1.6.1')
+    provided ('org.apache.spark:spark-core_2.10:1.6.1') {
+        exclude module: 'hadoop-client'
+    }
     provided ('org.apache.spark:spark-sql_2.10:1.6.1')
     provided 'org.scala-lang:scala-library:2.10.2'
-    provided ('org.apache.hadoop:hadoop-hdfs:2.5.0') {
+    provided ('org.apache.hadoop:hadoop-hdfs:2.6.0') {
         exclude group: 'javax.servlet'
     }
 
@@ -82,14 +90,6 @@ dependencies {
 	testCompile ('org.apache.hadoop:hadoop-common:2.6.0:tests') {
         exclude group: 'javax.servlet'
     }
-}
-
-
-configurations {
-    runtime.exclude module: 'spark-core_2.10'
-    runtime.exclude module: 'spark-sql_2.10'
-    runtime.exclude module: 'scala-library'
-    runtime.exclude module: 'hadoop-hdfs'
 }
 
 /***** packaging *****/
@@ -144,6 +144,7 @@ sourceSets {
 
 task integration(type: Test) {
     testClassesDir = sourceSets.integration.output.classesDir
+//    maxParallelForks = 2
     classpath = project.sourceSets.main.output +
        project.sourceSets.integration.output +
        sourceSets.test.compileClasspath
