@@ -1,4 +1,4 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.mode;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hadoop.compressor.mode.CamusCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.TopicCompressor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CamusCompressorTest {

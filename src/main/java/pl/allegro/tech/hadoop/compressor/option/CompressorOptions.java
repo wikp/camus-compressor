@@ -1,4 +1,7 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.option;
+
+import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
+import pl.allegro.tech.hadoop.compressor.option.FilesFormat;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -57,27 +60,11 @@ public class CompressorOptions implements Serializable {
                 '}';
     }
 
-    public enum FilesFormat {
-        AVRO, JSON;
-
-        static FilesFormat fromString(String format) {
-            return FilesFormat.valueOf(format.toUpperCase());
-        }
-    }
-
     public enum Mode {
         ALL, TOPIC, UNIT;
 
         static Mode fromString(String mode) {
             return Mode.valueOf(mode.toUpperCase());
-        }
-    }
-
-    public enum CompressionFormat {
-        SNAPPY, DEFLATE, LZO, NONE;
-
-        static CompressionFormat fromString(String format) {
-            return CompressionFormat.valueOf(format.toUpperCase());
         }
     }
 }

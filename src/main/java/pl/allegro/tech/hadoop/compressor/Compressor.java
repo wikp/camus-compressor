@@ -1,36 +1,39 @@
 package pl.allegro.tech.hadoop.compressor;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumMap;
-
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.mapred.AvroWrapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-
 import org.apache.spark.serializer.KryoSerializer;
-import org.apache.spark.sql.SQLContext;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
-import pl.allegro.tech.hadoop.compressor.compression.DeflateCompression;
-import pl.allegro.tech.hadoop.compressor.compression.LzoCompression;
-import pl.allegro.tech.hadoop.compressor.compression.NoneCompression;
-import pl.allegro.tech.hadoop.compressor.compression.SnappyCompression;
-import pl.allegro.tech.hadoop.compressor.unit.UnitCompressor;
-import pl.allegro.tech.hadoop.compressor.unit.AvroUnitCompressor;
-import pl.allegro.tech.hadoop.compressor.unit.JsonUnitCompressor;
+import pl.allegro.tech.hadoop.compressor.compression.CompressionBuilder;
+import pl.allegro.tech.hadoop.compressor.mode.CamusCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.Compress;
+import pl.allegro.tech.hadoop.compressor.mode.TopicCompressor;
+import pl.allegro.tech.hadoop.compressor.option.CompressorOptions;
+import pl.allegro.tech.hadoop.compressor.option.FilesFormat;
+import pl.allegro.tech.hadoop.compressor.mode.unit.AvroUnitCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.unit.JsonUnitCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.unit.UnitCompressor;
 import pl.allegro.tech.hadoop.compressor.util.FileSystemUtils;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
+import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
+
+import java.io.IOException;
+import java.util.EnumMap;
 
 public final class Compressor {
 
     public static final Logger logger = Logger.getLogger(Compressor.class);
 
     private static FileSystem fileSystem;
-    private static SQLContext sqlContext;
     private static JavaSparkContext sparkContext;
-    private static Compression compression;
-    private static InputAnalyser inputAnalyser;
     private static SparkConf sparkConf;
     private static CompressorOptions compressorOptions;
 
@@ -49,11 +52,8 @@ public final class Compressor {
                 .set("spark.serializer", KryoSerializer.class.getName());
 
         sparkContext = new JavaSparkContext(sparkConf);
-        sqlContext = new SQLContext(sparkContext);
         final Configuration configuration = FileSystemUtils.getConfiguration(sparkContext);
         fileSystem = FileSystemUtils.getFileSystem(configuration);
-        compression = getCompression(compressorOptions.getCompression());
-        inputAnalyser = createInputAnalyser();
     }
 
     private static EnumMap<CompressorOptions.Mode, Compress> prepareCompressors() {
@@ -72,27 +72,34 @@ public final class Compressor {
     }
 
     private static UnitCompressor createUnitCompressor() {
-        if (CompressorOptions.FilesFormat.AVRO.equals(compressorOptions.getFormat())) {
-            return new AvroUnitCompressor(sqlContext, fileSystem, compressorOptions, inputAnalyser);
-        } else if (CompressorOptions.FilesFormat.JSON.equals(compressorOptions.getFormat())) {
-            return new JsonUnitCompressor(sparkContext, fileSystem, compression, inputAnalyser);
+        if (FilesFormat.AVRO.equals(compressorOptions.getFormat())) {
+            final Compression<AvroWrapper<GenericRecord>, NullWritable> avroCompression = getAvroCompression();
+            final InputAnalyser inputAnalyser = createInputAnalyser(avroCompression);
+            return new AvroUnitCompressor(sparkContext, fileSystem, inputAnalyser, avroCompression);
+        } else if (FilesFormat.JSON.equals(compressorOptions.getFormat())) {
+            final Compression<LongWritable, Text> jsonCompression = getJsonCompression();
+            final InputAnalyser inputAnalyser = createInputAnalyser(jsonCompression);
+            return new JsonUnitCompressor(sparkContext, fileSystem, jsonCompression, inputAnalyser);
         }
 
         throw new IllegalArgumentException("Invalid format specified");
     }
 
-    private static Compression getCompression(CompressorOptions.CompressionFormat compressor) {
-        if (CompressorOptions.CompressionFormat.NONE.equals(compressor)) {
-            return new NoneCompression(fileSystem, sparkContext);
-        } else if (CompressorOptions.CompressionFormat.LZO.equals(compressor)) {
-            return new LzoCompression(sparkContext, fileSystem);
-        } else if (CompressorOptions.CompressionFormat.DEFLATE.equals(compressor)) {
-            return new DeflateCompression(sparkContext, fileSystem);
-        }
-        return new SnappyCompression(fileSystem, sparkContext);
+    private static InputAnalyser createInputAnalyser(Compression<?, ?> compression) {
+        return new InputAnalyser(fileSystem, compression, compressorOptions.isForceSplit());
     }
 
-    private static InputAnalyser createInputAnalyser() {
-        return new InputAnalyser(fileSystem, compression, compressorOptions.isForceSplit());
+    private static Compression<LongWritable, Text> getJsonCompression() {
+        return CompressionBuilder.forSparkContext(sparkContext)
+                .onFileSystem(fileSystem)
+                .andCompressorOfType(compressorOptions.getCompression())
+                .forJsonFiles();
+    }
+
+    private static Compression<AvroWrapper<GenericRecord>, NullWritable> getAvroCompression() {
+        return CompressionBuilder.forSparkContext(sparkContext)
+                .onFileSystem(fileSystem)
+                .andCompressorOfType(compressorOptions.getCompression())
+                .forAvroFiles();
     }
 }

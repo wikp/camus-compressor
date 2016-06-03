@@ -1,11 +1,11 @@
-package pl.allegro.tech.hadoop.compressor.unit;
+package pl.allegro.tech.hadoop.compressor.mode.unit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
-import pl.allegro.tech.hadoop.compressor.Compress;
-import pl.allegro.tech.hadoop.compressor.InputAnalyser;
+import pl.allegro.tech.hadoop.compressor.mode.Compress;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 
 import java.io.IOException;
 
@@ -83,5 +83,4 @@ public abstract class UnitCompressor implements Compress {
     public boolean remove(String path, boolean recursive) throws IOException {
         return fileSystem.delete(new Path(path), recursive);
     }
-
 }

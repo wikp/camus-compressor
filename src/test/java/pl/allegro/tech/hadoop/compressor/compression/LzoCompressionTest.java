@@ -1,23 +1,18 @@
 package pl.allegro.tech.hadoop.compressor.compression;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
-import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
-
-import java.lang.reflect.Field;
-
+import com.hadoop.compression.lzo.LzoCodec;
+import com.hadoop.compression.lzo.LzopCodec;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +21,18 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
 
-import com.hadoop.compression.lzo.LzoCodec;
-import com.hadoop.compression.lzo.LzopCodec;
+import java.lang.reflect.Field;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LzoCompressionTest {
@@ -54,13 +58,18 @@ public class LzoCompressionTest {
     private FileSystem fileSystem;
 
     @Mock
-    private JavaRDD<String> content;
+    private JavaPairRDD<LongWritable, Text> content;
 
-    private LzoCompression lzoCompression;
+    private Compression<LongWritable, Text> lzoCompression;
+    private JobConf jobConf;
 
     @Before
     public void setUp() {
-        lzoCompression = new LzoCompression(sparkContext, fileSystem);
+        lzoCompression = CompressionBuilder.forSparkContext(sparkContext)
+                .onFileSystem(fileSystem)
+                .andCompressorOfType(CompressionFormat.LZO)
+                .forJsonFiles();
+        jobConf = new JobConf();
     }
 
     @Test
@@ -85,13 +94,14 @@ public class LzoCompressionTest {
 
         // when
         try {
-            lzoCompression.compress(content, OUTPUT_DIR_NAME);
+            lzoCompression.compress(content, OUTPUT_DIR_NAME, jobConf);
         } catch (UnsatisfiedLinkError ex) {
             logger.warn("native lzo library not loaded (acceptable in unit tests)");
         }
 
         // then
-        verify(content).saveAsTextFile(OUTPUT_DIR_NAME, LzopCodec.class);
+        verify(content).saveAsHadoopFile(OUTPUT_DIR_NAME, LongWritable.class, Text.class, TextOutputFormat.class, jobConf);
+        assertEquals(jobConf.get(AbstractCompression.COMPRESSION_CODEC_KEY), LzopCodec.class.getName());
     }
 
     @Test

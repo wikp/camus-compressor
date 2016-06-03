@@ -1,4 +1,4 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.mode;
 
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
@@ -19,7 +19,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import pl.allegro.tech.hadoop.compressor.unit.UnitCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.TopicCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.unit.UnitCompressor;
+import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TopicCompressorTest {
@@ -117,11 +119,11 @@ public class TopicCompressorTest {
         verifyNoMoreInteractions(unitCompressor);
     }
 
-    private static final FileStatus fileStatusForPath(Path path) {
+    private static FileStatus fileStatusForPath(Path path) {
         return new FileStatus(10, true, 3, 1024, 100, path);
     }
 
-    private static final FileStatus fileStatusForPath(String path) {
+    private static FileStatus fileStatusForPath(String path) {
         return fileStatusForPath(new Path(path));
     }
 }

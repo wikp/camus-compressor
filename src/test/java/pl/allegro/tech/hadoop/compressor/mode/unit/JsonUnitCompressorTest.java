@@ -1,8 +1,13 @@
-package pl.allegro.tech.hadoop.compressor.unit;
+package pl.allegro.tech.hadoop.compressor.mode.unit;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
@@ -13,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import pl.allegro.tech.hadoop.compressor.InputAnalyser;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
 
 import java.io.IOException;
@@ -42,10 +47,10 @@ public class JsonUnitCompressorTest {
     private FileSystem fileSystem;
 
     @Mock
-    private Compression compression;
+    private Compression<LongWritable, Text> compression;
 
     @Mock
-    private JavaRDD<String> testRDD;
+    private JavaPairRDD<LongWritable, Text> testRDD;
 
     private UnitCompressor unitCompressor;
 
@@ -58,7 +63,8 @@ public class JsonUnitCompressorTest {
     @Test
     public void shouldCompress() throws Exception {
         // given
-        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
+        when(sparkContext.hadoopFile(eq(UNIT_PATH_NAME), eq(TextInputFormat.class),
+                eq(LongWritable.class), eq(Text.class))).thenReturn(testRDD);
         when(testRDD.repartition(anyInt())).thenReturn(testRDD);
         when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
@@ -68,13 +74,14 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression).compress(same(testRDD), anyString());
+        verify(compression).compress(same(testRDD), anyString(), any(JobConf.class));
     }
 
     @Test
     public void shouldContinueWhenSuccessFileNotExists() throws Exception {
         // given
-        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
+        when(sparkContext.hadoopFile(eq(UNIT_PATH_NAME), eq(TextInputFormat.class),
+                eq(LongWritable.class), eq(Text.class))).thenReturn(testRDD);
         when(testRDD.repartition(anyInt())).thenReturn(testRDD);
         when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
@@ -92,12 +99,13 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression).compress(same(testRDD), anyString());
+        verify(compression).compress(same(testRDD), anyString(), any(JobConf.class));
         verifyCleanup();
         verify(fileSystem).delete(not(eq(UNIT_PATH)), eq(true));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotCompressWhenNoFiles() throws IOException {
         // given
         when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_STATUSES);
@@ -107,10 +115,11 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotCompressWhenEmptyFiles() throws Exception {
         // given
         when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_FILES_STATUSES);
@@ -120,10 +129,11 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotCompressAlreadyCompressedFiles() throws Exception {
         // given
         when(fileSystem.globStatus(any(Path.class))).thenReturn(COMPRESSED_TEST_STATUSES);
@@ -133,10 +143,11 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldNotCompressWhenSuccessFileExists() throws Exception {
         // given
         when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
@@ -147,7 +158,7 @@ public class JsonUnitCompressorTest {
         unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
         verifyCleanup();
     }
 

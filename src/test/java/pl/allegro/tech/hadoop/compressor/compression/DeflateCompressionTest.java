@@ -5,9 +5,12 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.GlobFilter;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.DeflateCodec;
-import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -29,7 +33,6 @@ import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
 @RunWith(MockitoJUnitRunner.class)
 public class DeflateCompressionTest {
 
-    private static final Logger logger = Logger.getLogger(DeflateCompressionTest.class);
     private static final String CODEC = DeflateCodec.class.getName();
     private static final String OUTPUT_DIR_NAME = "output_dir_name";
     private static final Path OUTPUT_PATH = new Path(OUTPUT_DIR_NAME);
@@ -50,13 +53,18 @@ public class DeflateCompressionTest {
     private FileSystem fileSystem;
 
     @Mock
-    private JavaRDD<String> content;
+    private JavaPairRDD<LongWritable, Text> content;
 
-    private DeflateCompression deflateCompression;
+    private Compression<LongWritable, Text> deflateCompression;
+    private JobConf jobConf;
 
     @Before
     public void setUp() throws Exception {
-        deflateCompression = new DeflateCompression(sparkContext, fileSystem);
+        deflateCompression = CompressionBuilder.forSparkContext(sparkContext)
+                .onFileSystem(fileSystem)
+                .andCompressorOfType(CompressionFormat.DEFLATE)
+                .forJsonFiles();
+        jobConf = new JobConf();
     }
 
     @Test
@@ -76,10 +84,11 @@ public class DeflateCompressionTest {
         when(fileSystem.listStatus(eq(OUTPUT_PATH), any(GlobFilter.class))).thenReturn(TEST_STATUSES);
 
         // when
-        deflateCompression.compress(content, OUTPUT_DIR_NAME);
+        deflateCompression.compress(content, OUTPUT_DIR_NAME, jobConf);
 
         // then
-        verify(content).saveAsTextFile(OUTPUT_DIR_NAME, DeflateCodec.class);
+        verify(content).saveAsHadoopFile(OUTPUT_DIR_NAME, LongWritable.class, Text.class, TextOutputFormat.class,
+                jobConf);
     }
 
     @Test

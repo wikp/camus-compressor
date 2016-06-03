@@ -1,23 +1,25 @@
 package pl.allegro.tech.hadoop.compressor.compression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.SnappyCodec;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static pl.allegro.tech.hadoop.compressor.Utils.checkDecompress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SnappyCompressionTest {
@@ -32,24 +34,29 @@ public class SnappyCompressionTest {
     private JavaSparkContext sparkContext;
 
     @Mock
-    private JavaRDD<String> content;
+    private JavaPairRDD<LongWritable, Text> content;
 
-    private Compression snappyCompression;
+    private JobConf jobConf = new JobConf();
+
+    private Compression<LongWritable, Text> snappyCompression;
 
     @Before
     public void setUp() throws Exception {
         when(fileSystem.getDefaultBlockSize(any(Path.class)))
                 .thenReturn(256L);
-        snappyCompression = new SnappyCompression(fileSystem, sparkContext);
+        snappyCompression = CompressionBuilder.forSparkContext(sparkContext)
+                .onFileSystem(fileSystem)
+                .andCompressorOfType(CompressionFormat.SNAPPY)
+                .forJsonFiles();
     }
 
     @Test
     public void shouldCompressWithJsonCodec() throws Exception {
         //when
-        snappyCompression.compress(content, OUTPUT_DIR);
+        snappyCompression.compress(content, OUTPUT_DIR, jobConf);
 
         //then
-        verify(content).saveAsTextFile(OUTPUT_DIR, SnappyCodec.class);
+        verify(content).saveAsHadoopFile(OUTPUT_DIR, LongWritable.class, Text.class, TextOutputFormat.class, jobConf);
     }
 
     @Test

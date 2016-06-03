@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 
 public class Utils {
 
-    public static final FileStatus fileStatusForPath(Path path) {
+    public static FileStatus fileStatusForPath(Path path) {
         return new FileStatus(10L, true, 3, 1024L, 100L, path);
     }
 

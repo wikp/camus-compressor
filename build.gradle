@@ -72,14 +72,11 @@ dependencies {
     provided ('org.apache.spark:spark-core_2.10:1.6.1') {
         exclude module: 'hadoop-client'
     }
-    provided ('org.apache.spark:spark-sql_2.10:1.6.1')
     provided 'org.scala-lang:scala-library:2.10.2'
     provided ('org.apache.hadoop:hadoop-hdfs:2.6.0') {
         exclude group: 'javax.servlet'
     }
-
     compile 'com.hadoop.gplcompression:hadoop-lzo:0.4.19'
-    compile 'com.databricks:spark-avro_2.10:2.0.1'
 
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'junit:junit:4.11'

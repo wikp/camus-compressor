@@ -1,30 +1,30 @@
 package pl.allegro.tech.hadoop.compressor.compression;
 
-import java.io.IOException;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-public class NoneCompression implements Compression {
+import java.io.IOException;
 
-    private JavaSparkContext sparkContext;
+class NoneCompression<K, V, I extends InputFormat<K, V>, O extends OutputFormat<K, V>>
+        extends AbstractCompression<K, V, I, O> {
+
     private long inputBlockSize;
 
-    public NoneCompression(FileSystem fileSystem, JavaSparkContext sparkContext) {
-        this.sparkContext = sparkContext;
+    public NoneCompression(JavaSparkContext sparkContext, FileSystem fileSystem, Class<K> keyClass, Class<V> valueClass,
+                           Class<I> inputFormatClass, Class<O> outputFormatClass) {
+
+        super(sparkContext, keyClass, valueClass, inputFormatClass, outputFormatClass);
         this.inputBlockSize = fileSystem.getDefaultBlockSize(new Path("/"));
     }
 
     @Override
-    public void compress(JavaRDD<String> content, String outputDir) throws IOException {
-        content.saveAsTextFile(outputDir);
-    }
-
-    @Override
-    public JavaRDD<String> decompress(String inputFile) throws IOException {
-        return sparkContext.textFile(String.format("%s/*", inputFile));
+    public void compress(JavaPairRDD<K, V> content, String outputDir, JobConf jobConf) throws IOException {
+        content.saveAsHadoopFile(outputDir, kClass, vClass, oClass);
     }
 
     @Override

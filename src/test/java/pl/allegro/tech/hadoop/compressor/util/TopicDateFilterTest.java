@@ -1,6 +1,7 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.util;
 
 import org.junit.Test;
+import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
 
 import java.io.IOException;
 import java.util.Calendar;

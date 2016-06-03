@@ -1,10 +1,9 @@
 package pl.allegro.tech.hadoop.compressor.util;
 
+import com.hadoop.compression.lzo.LzoCodec;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import com.hadoop.compression.lzo.LzoCodec;
 
 import java.io.IOException;
 

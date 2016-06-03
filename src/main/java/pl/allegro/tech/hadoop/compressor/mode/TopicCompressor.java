@@ -1,12 +1,13 @@
-package pl.allegro.tech.hadoop.compressor;
-
-import java.io.IOException;
+package pl.allegro.tech.hadoop.compressor.mode;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
-import pl.allegro.tech.hadoop.compressor.unit.UnitCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.unit.UnitCompressor;
+import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
+
+import java.io.IOException;
 
 public class TopicCompressor implements Compress {
 
