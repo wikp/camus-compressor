@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.serializer.KryoSerializer;
+import org.schemarepo.json.GsonJsonUtil;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
 import pl.allegro.tech.hadoop.compressor.compression.CompressionBuilder;
 import pl.allegro.tech.hadoop.compressor.mode.CamusCompressor;
@@ -21,6 +22,9 @@ import pl.allegro.tech.hadoop.compressor.option.FilesFormat;
 import pl.allegro.tech.hadoop.compressor.mode.unit.AvroUnitCompressor;
 import pl.allegro.tech.hadoop.compressor.mode.unit.JsonUnitCompressor;
 import pl.allegro.tech.hadoop.compressor.mode.unit.UnitCompressor;
+import pl.allegro.tech.hadoop.compressor.schema.InputPathToTopicConverter;
+import pl.allegro.tech.hadoop.compressor.schema.SchemaRepoSchemaRepository;
+import pl.allegro.tech.hadoop.compressor.schema.SchemaRepository;
 import pl.allegro.tech.hadoop.compressor.util.FileSystemUtils;
 import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
@@ -75,7 +79,8 @@ public final class Compressor {
         if (FilesFormat.AVRO.equals(compressorOptions.getFormat())) {
             final Compression<AvroWrapper<GenericRecord>, NullWritable> avroCompression = getAvroCompression();
             final InputAnalyser inputAnalyser = createInputAnalyser(avroCompression);
-            return new AvroUnitCompressor(sparkContext, fileSystem, inputAnalyser, avroCompression);
+            final SchemaRepository schemaRepository = createSchemaRepository();
+            return new AvroUnitCompressor(sparkContext, fileSystem, inputAnalyser, schemaRepository, avroCompression);
         } else if (FilesFormat.JSON.equals(compressorOptions.getFormat())) {
             final Compression<LongWritable, Text> jsonCompression = getJsonCompression();
             final InputAnalyser inputAnalyser = createInputAnalyser(jsonCompression);
@@ -83,6 +88,11 @@ public final class Compressor {
         }
 
         throw new IllegalArgumentException("Invalid format specified");
+    }
+
+    private static SchemaRepository createSchemaRepository() {
+        return new SchemaRepoSchemaRepository(compressorOptions.getSchemaRepositoryUrl(), new GsonJsonUtil(),
+                new InputPathToTopicConverter());
     }
 
     private static InputAnalyser createInputAnalyser(Compression<?, ?> compression) {

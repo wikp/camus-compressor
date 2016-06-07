@@ -58,7 +58,7 @@ public abstract class UnitCompressor implements Compress {
             throws IOException;
 
     private String getTemporaryDirPath(String hourPath) {
-        return String.format("/tmp/compressor/%s", hourPath.replace(":", "").replace('/', '-'));
+        return String.format("/tmp/compressor-tests/%s", hourPath.replace(":", "").replace('/', '-'));
     }
 
     private String getSuccessFilePath(String outputDir) {
@@ -67,9 +67,9 @@ public abstract class UnitCompressor implements Compress {
 
     private void cleanup(String inputDir, String outputDir) throws IOException {
         logger.info(String.format("Cleaning input dir %s and success file %s", inputDir, getSuccessFilePath(outputDir)));
-        remove(inputDir, true);
+//        remove(inputDir, true);
         remove(getSuccessFilePath(outputDir), false);
-        move(outputDir, inputDir);
+//        move(outputDir, inputDir);
     }
 
     private boolean move(String outputDir, String inputDir) throws IOException {

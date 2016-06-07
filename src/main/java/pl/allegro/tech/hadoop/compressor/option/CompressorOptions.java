@@ -13,6 +13,7 @@ public class CompressorOptions implements Serializable {
     private final int delay;
     private final CompressionFormat compression;
     private final FilesFormat format;
+    private final String schemaRepositoryUrl;
     private final boolean forceSplit;
 
     public CompressorOptions(String[] args) {
@@ -21,6 +22,7 @@ public class CompressorOptions implements Serializable {
         compression = CompressionFormat.fromString(args[2]);
         delay = Integer.valueOf(args[3]);
         format = FilesFormat.fromString(args[4]);
+        schemaRepositoryUrl = args[5];
         forceSplit = Arrays.asList(args).contains("--force");
     }
 
@@ -44,6 +46,10 @@ public class CompressorOptions implements Serializable {
         return format;
     }
 
+    public String getSchemaRepositoryUrl() {
+        return schemaRepositoryUrl;
+    }
+
     public boolean isForceSplit() {
         return forceSplit;
     }
@@ -56,6 +62,7 @@ public class CompressorOptions implements Serializable {
                 ", delay=" + delay +
                 ", compression=" + compression +
                 ", format=" + format +
+                ", schemaRepositoryUrl=" + schemaRepositoryUrl +
                 ", forceSplit=" + forceSplit +
                 '}';
     }

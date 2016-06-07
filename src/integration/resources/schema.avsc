@@ -1,0 +1,954 @@
+{
+  "default": null,
+  "doc": "@toDo - docs",
+  "type": "record",
+  "name": "offerchanged",
+  "namespace": "pl.allegro.offercore.v3",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
+      "default": null,
+      "doc": "Used in Hermes internals to propagate metadata like hermes-id"
+    },
+    {
+      "name": "cause",
+      "default": null,
+      "doc": "@toDo - docs",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "offer",
+      "default": null,
+      "doc": "@toDo - docs",
+      "type": [
+        "null",
+        {
+          "default": null,
+          "doc": "@toDo - docs",
+          "type": "record",
+          "name": "Offer",
+          "fields": [
+            {
+              "name": "attributes",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "array",
+                  "items": {
+                    "default": null,
+                    "doc": "@toDo - docs",
+                    "type": "record",
+                    "name": "Attribute",
+                    "fields": [
+                      {
+                        "name": "id",
+                        "default": null,
+                        "doc": "@toDo - docs",
+                        "type": [
+                          "null",
+                          "string"
+                        ]
+                      },
+                      {
+                        "name": "range",
+                        "default": null,
+                        "doc": "@toDo - docs",
+                        "type": [
+                          "null",
+                          {
+                            "default": null,
+                            "doc": "@toDo - docs",
+                            "type": "record",
+                            "name": "Range",
+                            "fields": [
+                              {
+                                "name": "from",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              },
+                              {
+                                "name": "to",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "values",
+                        "default": null,
+                        "doc": "@toDo - docs",
+                        "type": [
+                          "null",
+                          {
+                            "default": null,
+                            "doc": "@toDo - docs",
+                            "type": "array",
+                            "items": "string"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "category",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Identifier",
+                  "namespace": "pl.allegro.offercore.v3",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "createdAt",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "deliveryPriceList",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                "pl.allegro.offercore.v3.Identifier"
+              ]
+            },
+            {
+              "name": "features",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Features",
+                  "fields": [
+                    {
+                      "name": "shopItem",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "vatInvoice",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "id",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "paymentMethods",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "PaymentMethods",
+                  "fields": [
+                    {
+                      "name": "transfer",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "record",
+                          "name": "Transfer",
+                          "fields": [
+                            {
+                              "name": "bankAccounts",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                {
+                                  "default": null,
+                                  "doc": "@toDo - docs",
+                                  "type": "array",
+                                  "items": {
+                                    "default": null,
+                                    "doc": "@toDo - docs",
+                                    "type": "record",
+                                    "name": "Iban",
+                                    "fields": [
+                                      {
+                                        "name": "iban",
+                                        "default": null,
+                                        "doc": "@toDo - docs",
+                                        "type": [
+                                          "null",
+                                          "string"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "product",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Product",
+                  "fields": [
+                    {
+                      "name": "embedded",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "record",
+                          "name": "Embedded",
+                          "fields": [
+                            {
+                              "name": "description",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                "pl.allegro.offercore.v3.Identifier"
+                              ]
+                            },
+                            {
+                              "name": "gallery",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                {
+                                  "default": null,
+                                  "doc": "@toDo - docs",
+                                  "type": "record",
+                                  "name": "Gallery",
+                                  "fields": [
+                                    {
+                                      "name": "images",
+                                      "default": null,
+                                      "doc": "@toDo - docs",
+                                      "type": [
+                                        "null",
+                                        {
+                                          "default": null,
+                                          "doc": "@toDo - docs",
+                                          "type": "array",
+                                          "items": {
+                                            "default": null,
+                                            "doc": "@toDo - docs",
+                                            "type": "record",
+                                            "name": "Image",
+                                            "fields": [
+                                              {
+                                                "name": "url",
+                                                "default": null,
+                                                "doc": "@toDo - docs",
+                                                "type": [
+                                                  "null",
+                                                  "string"
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "name",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                "string"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "pmd",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "pl.allegro.offercore.v3.Identifier"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "promotion",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Promotion",
+                  "fields": [
+                    {
+                      "name": "bold",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "departmentPage",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "emphasized",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "emphasizedDepartmentPagePackage",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "emphasizedHighlightBoldPackage",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "highlight",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "highlightBoldPackage",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    },
+                    {
+                      "name": "mainPage",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "boolean"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "publication",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Publication",
+                  "fields": [
+                    {
+                      "name": "countryCode",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "durationLimit",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "endedAt",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "endedBy",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "endingAt",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "republish",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "startedAt",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "startingAt",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "status",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "seller",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                "pl.allegro.offercore.v3.Identifier"
+              ]
+            },
+            {
+              "name": "sellingMode",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "SellingMode",
+                  "fields": [
+                    {
+                      "name": "auction",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "record",
+                          "name": "Auction",
+                          "fields": [
+                            {
+                              "name": "minimalPrice",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                {
+                                  "default": null,
+                                  "doc": "@toDo - docs",
+                                  "type": "record",
+                                  "name": "Price",
+                                  "fields": [
+                                    {
+                                      "name": "amount",
+                                      "default": null,
+                                      "doc": "@toDo - docs",
+                                      "type": [
+                                        "null",
+                                        "string"
+                                      ]
+                                    },
+                                    {
+                                      "name": "currency",
+                                      "default": null,
+                                      "doc": "@toDo - docs",
+                                      "type": [
+                                        "null",
+                                        "string"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "startingPrice",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                "Price"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "buyNow",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "record",
+                          "name": "BuyNow",
+                          "fields": [
+                            {
+                              "name": "price",
+                              "default": null,
+                              "doc": "@toDo - docs",
+                              "type": [
+                                "null",
+                                "Price"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "stock",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "Stock",
+                  "fields": [
+                    {
+                      "name": "initialQuantity",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "int"
+                      ]
+                    },
+                    {
+                      "name": "quantityType",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "variants",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "array",
+                          "items": {
+                            "default": null,
+                            "doc": "@toDo - docs",
+                            "type": "record",
+                            "name": "Variant",
+                            "fields": [
+                              {
+                                "name": "attributes",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  {
+                                    "default": null,
+                                    "doc": "@toDo - docs",
+                                    "type": "array",
+                                    "items": {
+                                      "default": null,
+                                      "doc": "@toDo - docs",
+                                      "type": "record",
+                                      "name": "VariantAttribute",
+                                      "fields": [
+                                        {
+                                          "name": "id",
+                                          "default": null,
+                                          "doc": "@toDo - docs",
+                                          "type": [
+                                            "null",
+                                            "string"
+                                          ]
+                                        },
+                                        {
+                                          "name": "value",
+                                          "default": null,
+                                          "doc": "@toDo - docs",
+                                          "type": [
+                                            "null",
+                                            "string"
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "initialQuantity",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "int"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "validation",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "ValidationResult",
+                  "fields": [
+                    {
+                      "name": "validatedAt",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "errors",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "array",
+                          "items": {
+                            "default": null,
+                            "doc": "@toDo - docs",
+                            "type": "record",
+                            "name": "Error",
+                            "fields": [
+                              {
+                                "name": "code",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              },
+                              {
+                                "name": "path",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              },
+                              {
+                                "name": "message",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              },
+                              {
+                                "name": "userMessage",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              },
+                              {
+                                "name": "details",
+                                "default": null,
+                                "doc": "@toDo - docs",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "default": null,
+              "doc": "@toDo - docs",
+              "name": "audit",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "record",
+                  "name": "OfferAudit",
+                  "fields": [
+                    {
+                      "name": "createdByChannel",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    {
+                      "name": "updatedPaths",
+                      "default": null,
+                      "doc": "@toDo - docs",
+                      "type": [
+                        "null",
+                        {
+                          "default": null,
+                          "doc": "@toDo - docs",
+                          "type": "array",
+                          "items": {
+                            "default": null,
+                            "doc": "@toDo - docs",
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "updatedAt",
+              "default": null,
+              "doc": "@toDo - docs",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "updatedPaths",
+              "default": null,
+              "doc": "deprecated, do not use",
+              "type": [
+                "null",
+                {
+                  "default": null,
+                  "doc": "@toDo - docs",
+                  "type": "array",
+                  "items": {
+                    "default": null,
+                    "doc": "@toDo - docs",
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "timestamp",
+      "default": null,
+      "doc": "@toDo - docs",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "topic",
+      "default": null,
+      "doc": "@toDo - docs",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  ]
+}

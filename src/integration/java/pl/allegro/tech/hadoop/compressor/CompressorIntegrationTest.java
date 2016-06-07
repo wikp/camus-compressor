@@ -156,7 +156,6 @@ public class CompressorIntegrationTest {
     }
 
     private void checkCompressed(long size, String path) throws Exception {
-        fileSystem.copyToLocalFile(new Path("/camus_main_avro_dir/topic1/daily/" + pastDayPath), new Path("/tmp/dupa"));
         assertEquals(size, fileSystem.globStatus(new Path(path))[0].getLen());
     }
 

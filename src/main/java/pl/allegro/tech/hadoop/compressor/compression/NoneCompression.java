@@ -23,11 +23,6 @@ class NoneCompression<K, V, I extends InputFormat<K, V>, O extends OutputFormat<
     }
 
     @Override
-    public void compress(JavaPairRDD<K, V> content, String outputDir, JobConf jobConf) throws IOException {
-        content.saveAsHadoopFile(outputDir, kClass, vClass, oClass);
-    }
-
-    @Override
     public int getSplits(long size) {
         return (int) ((size + inputBlockSize - 1) / inputBlockSize);
     }
@@ -35,5 +30,10 @@ class NoneCompression<K, V, I extends InputFormat<K, V>, O extends OutputFormat<
     @Override
     public String getExtension() {
         return "";
+    }
+
+    @Override
+    protected void setupJobConf(JobConf jobConf) {
+        jobConf.setBoolean(MAPRED_COMPRESS_KEY, false);
     }
 }

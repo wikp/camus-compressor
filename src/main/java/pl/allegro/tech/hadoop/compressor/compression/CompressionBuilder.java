@@ -18,10 +18,7 @@ public class CompressionBuilder {
 
     private final JavaSparkContext sparkContext;
     private FileSystem fileSystem;
-    private FilesFormat inputFormat;
     private CompressionFormat compressionFormat;
-
-
 
     private static final Class<NullWritable> avroValueClass = NullWritable.class;
     @SuppressWarnings("unchecked")
