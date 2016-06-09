@@ -1,4 +1,28 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.mode.unit;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
+import pl.allegro.tech.hadoop.compressor.compression.Compression;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.not;
@@ -11,27 +35,11 @@ import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import pl.allegro.tech.hadoop.compressor.compression.Compression;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForEmptyFile;
+import static pl.allegro.tech.hadoop.compressor.Utils.fileStatusForPath;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UnitCompressorTest {
+public class JsonUnitCompressorTest {
 
     @Mock
     private JavaSparkContext sparkContext;
@@ -40,100 +48,43 @@ public class UnitCompressorTest {
     private FileSystem fileSystem;
 
     @Mock
-    private Compression compression;
+    private Compression<LongWritable, Text> compression;
+
+    @Mock
+    private JavaPairRDD<LongWritable, Text> testRDD;
 
     private UnitCompressor unitCompressor;
 
-    @Mock
-    private JavaRDD<String> testRDD;
-
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         InputAnalyser analyser = new InputAnalyser(fileSystem, compression, false);
-        unitCompressor = new UnitCompressor(sparkContext, fileSystem, compression, analyser);
+        unitCompressor = new JsonUnitCompressor(sparkContext, fileSystem, compression, analyser);
+        when(compression.openUncompressed(anyString())).thenReturn(testRDD);
+        when(sparkContext.hadoopConfiguration()).thenReturn(new Configuration());
     }
 
     @Test
     public void shouldCompress() throws Exception {
         // given
-        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
+        when(sparkContext.hadoopFile(eq(UNIT_PATH_NAME), eq(TextInputFormat.class),
+                eq(LongWritable.class), eq(Text.class))).thenReturn(testRDD);
         when(testRDD.repartition(anyInt())).thenReturn(testRDD);
         when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
         when(compression.getSplits(anyLong())).thenReturn(TEST_NUM_SPLITS);
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression).compress(same(testRDD), anyString());
-    }
-
-    @Test
-    public void shouldNotCompressWhenNoFiles() throws IOException {
-        // given
-        when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_STATUSES);
-        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
-
-        // when
-        unitCompressor.compressUnit(UNIT_PATH);
-
-        // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
-    }
-
-    @Test
-    public void shouldNotCompressWhenEmptyFiles() throws Exception {
-        // given
-        when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_FILES_STATUSES);
-        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
-
-        // when
-        unitCompressor.compressUnit(UNIT_PATH);
-
-        // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
-    }
-
-    @Test
-    public void shouldNotCompressAlreadyCompressedFiles() throws Exception {
-        // given
-        when(fileSystem.globStatus(any(Path.class))).thenReturn(COMPRESSED_TEST_STATUSES);
-        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
-
-        // when
-        unitCompressor.compressUnit(UNIT_PATH);
-
-        // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
-    }
-
-    @Test
-    public void shouldNotCompressWhenSuccessFileExists() throws Exception {
-        // given
-        when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
-        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
-        when(fileSystem.exists(any(Path.class))).thenReturn(true);
-
-        // when
-        unitCompressor.compressUnit(UNIT_PATH);
-
-        // then
-        verify(compression, never()).compress(any(JavaRDD.class), anyString());
-        verifyCleanup();
-    }
-
-    private void verifyCleanup() throws IOException {
-        verify(fileSystem).delete(eq(UNIT_PATH), eq(true));
-        ArgumentCaptor<Path> pathCaptor = ArgumentCaptor.forClass(Path.class);
-        verify(fileSystem).delete(pathCaptor.capture(), eq(false));
-        assertTrue(isSuccessFile(pathCaptor.getValue()));
+        verify(compression).compress(same(testRDD), anyString(), any(JobConf.class));
     }
 
     @Test
     public void shouldContinueWhenSuccessFileNotExists() throws Exception {
         // given
-        when(sparkContext.textFile(eq(UNIT_PATH_NAME))).thenReturn(testRDD);
+        when(sparkContext.hadoopFile(eq(UNIT_PATH_NAME), eq(TextInputFormat.class),
+                eq(LongWritable.class), eq(Text.class))).thenReturn(testRDD);
         when(testRDD.repartition(anyInt())).thenReturn(testRDD);
         when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
         when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
@@ -148,19 +99,81 @@ public class UnitCompressorTest {
         });
 
         // when
-        unitCompressor.compressUnit(UNIT_PATH);
+        unitCompressor.compress(UNIT_PATH);
 
         // then
-        verify(compression).compress(same(testRDD), anyString());
+        verify(compression).compress(same(testRDD), anyString(), any(JobConf.class));
         verifyCleanup();
         verify(fileSystem).delete(not(eq(UNIT_PATH)), eq(true));
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldNotCompressWhenNoFiles() throws IOException {
+        // given
+        when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_STATUSES);
+        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
+
+        // when
+        unitCompressor.compress(UNIT_PATH);
+
+        // then
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldNotCompressWhenEmptyFiles() throws Exception {
+        // given
+        when(fileSystem.globStatus(any(Path.class))).thenReturn(EMPTY_FILES_STATUSES);
+        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
+
+        // when
+        unitCompressor.compress(UNIT_PATH);
+
+        // then
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldNotCompressAlreadyCompressedFiles() throws Exception {
+        // given
+        when(fileSystem.globStatus(any(Path.class))).thenReturn(COMPRESSED_TEST_STATUSES);
+        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
+
+        // when
+        unitCompressor.compress(UNIT_PATH);
+
+        // then
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldNotCompressWhenSuccessFileExists() throws Exception {
+        // given
+        when(fileSystem.globStatus(any(Path.class))).thenReturn(TEST_STATUSES);
+        when(compression.getExtension()).thenReturn(COMPRESSED_EXTENSION);
+        when(fileSystem.exists(any(Path.class))).thenReturn(true);
+
+        // when
+        unitCompressor.compress(UNIT_PATH);
+
+        // then
+        verify(compression, never()).compress(any(JavaPairRDD.class), anyString(), any(JobConf.class));
+        verifyCleanup();
+    }
+
+    private void verifyCleanup() throws IOException {
+        verify(fileSystem).delete(eq(UNIT_PATH), eq(true));
+        ArgumentCaptor<Path> pathCaptor = ArgumentCaptor.forClass(Path.class);
+        verify(fileSystem).delete(pathCaptor.capture(), eq(false));
+        assertTrue(isSuccessFile(pathCaptor.getValue()));
+    }
+
     private boolean isSuccessFile(Path path) {
-        if (path.toString().endsWith("_SUCCESS")) {
-            return true;
-        }
-        return false;
+        return path.toString().endsWith("_SUCCESS");
     }
 
     private static final String COMPRESSED_EXTENSION = "ext";
@@ -181,11 +194,4 @@ public class UnitCompressorTest {
     private static final FileStatus[] EMPTY_STATUSES = {};
 
 
-    private static final FileStatus fileStatusForPath(Path path) {
-        return new FileStatus(10L, true, 3, 1024L, 100L, path);
-    }
-
-    private static final FileStatus fileStatusForEmptyFile(Path path) {
-        return new FileStatus(0L, true, 3, 1024L, 100L, path);
-    }
 }

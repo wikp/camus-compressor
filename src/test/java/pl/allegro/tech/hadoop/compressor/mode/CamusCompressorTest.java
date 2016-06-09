@@ -1,4 +1,4 @@
-package pl.allegro.tech.hadoop.compressor;
+package pl.allegro.tech.hadoop.compressor.mode;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import pl.allegro.tech.hadoop.compressor.mode.CamusCompressor;
+import pl.allegro.tech.hadoop.compressor.mode.TopicCompressor;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CamusCompressorTest {
@@ -45,11 +47,11 @@ public class CamusCompressorTest {
         when(fileSystem.listStatus(new Path("camus_dir"))).thenReturn(topics);
 
         // when
-        camusCompressor.compressAll("camus_dir");
+        camusCompressor.compress("camus_dir");
 
         // then
-        verify(topicCompressor).compressTopic(new Path(PATH_PREFIX + "topic1"));
-        verify(topicCompressor).compressTopic(new Path(PATH_PREFIX + "topic2"));
+        verify(topicCompressor).compress(new Path(PATH_PREFIX + "topic1"));
+        verify(topicCompressor).compress(new Path(PATH_PREFIX + "topic2"));
         verifyNoMoreInteractions(topicCompressor);
     }
 
