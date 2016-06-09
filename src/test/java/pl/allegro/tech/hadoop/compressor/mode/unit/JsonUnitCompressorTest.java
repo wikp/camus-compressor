@@ -9,7 +9,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,8 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 
 import java.io.IOException;
 

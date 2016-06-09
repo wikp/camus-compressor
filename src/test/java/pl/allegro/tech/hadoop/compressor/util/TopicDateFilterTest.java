@@ -1,7 +1,6 @@
 package pl.allegro.tech.hadoop.compressor.util;
 
 import org.junit.Test;
-import pl.allegro.tech.hadoop.compressor.util.TopicDateFilter;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -9,7 +8,8 @@ import java.util.Calendar;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TopicDateFilterTest {
 

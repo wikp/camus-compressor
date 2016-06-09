@@ -6,8 +6,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
+import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 
 import java.io.IOException;
 

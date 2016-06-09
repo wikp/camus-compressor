@@ -1,8 +1,5 @@
 package pl.allegro.tech.hadoop.compressor.option;
 
-import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
-import pl.allegro.tech.hadoop.compressor.option.FilesFormat;
-
 import java.io.Serializable;
 import java.util.Arrays;
 

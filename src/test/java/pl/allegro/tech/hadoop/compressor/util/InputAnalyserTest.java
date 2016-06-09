@@ -12,8 +12,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hadoop.compressor.compression.Compression;
-import pl.allegro.tech.hadoop.compressor.compression.CompressionBuilder;
-import pl.allegro.tech.hadoop.compressor.option.CompressionFormat;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -23,9 +21,7 @@ import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)

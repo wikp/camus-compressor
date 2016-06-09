@@ -5,10 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
-import java.io.IOException;
 
 class NoneCompression<K, V, I extends InputFormat<K, V>, O extends OutputFormat<K, V>>
         extends AbstractCompression<K, V, I, O> {
