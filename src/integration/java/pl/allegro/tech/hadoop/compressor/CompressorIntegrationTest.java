@@ -170,7 +170,6 @@ public class CompressorIntegrationTest {
     }
 
     private void checkCompressed(long size, String path) throws Exception {
-        fileSystem.copyToLocalFile(false, fileSystem.globStatus(new Path(path))[0].getPath(), new Path("/tmp/dupsko"), true);
         assertEquals(size, fileSystem.globStatus(new Path(path))[0].getLen());
     }
 
