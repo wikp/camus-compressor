@@ -52,7 +52,7 @@ public final class Compressor {
 
     private static void init() throws IOException {
         sparkConf = new SparkConf()
-                .setAppName(Compressor.class.getName())
+                .setAppName(compressorOptions.getFormat().name() + " compression in " + compressorOptions.getInputDir())
                 .set("spark.serializer", KryoSerializer.class.getName());
 
         sparkContext = new JavaSparkContext(sparkConf);

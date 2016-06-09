@@ -52,6 +52,7 @@ repositories {
 configurations {
     all*.exclude group: 'javax.servlet'
     provided.exclude module: 'hadoop-client'
+    integrationCompile.extendsFrom(testCompile)
 }
 
 dependencies {
@@ -70,6 +71,12 @@ dependencies {
 	testCompile group: 'org.apache.hadoop', name: 'hadoop-common',  version: '2.6.0', classifier: 'tests'
 
     integrationCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '1.58'
+}
+
+idea {
+    module {
+        scopes.TEST.plus += [ configurations.integrationCompile ]
+    }
 }
 
 /***** packaging *****/
