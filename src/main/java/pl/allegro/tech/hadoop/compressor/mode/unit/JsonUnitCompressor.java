@@ -14,7 +14,7 @@ import scala.Tuple2;
 
 import java.io.IOException;
 
-public class JsonUnitCompressor extends UnitCompressor {
+public class JsonUnitCompressor extends UnitCompressor<LongWritable, Text> {
 
     private final JavaSparkContext context;
     private final Compression<LongWritable, NullWritable, Text> compression;
@@ -30,21 +30,21 @@ public class JsonUnitCompressor extends UnitCompressor {
     }
 
     @Override
-    protected long countOutputDir(String outputDir, String inputPath) throws IOException {
-        return compression.openUncompressed(inputPath).count();
+    protected JavaPairRDD<LongWritable, Text> countOutputDir(String outputDir, String inputPath) throws IOException {
+        return compression.openUncompressed(inputPath);
     }
 
     @Override
-    protected void repartition(String inputPath, String outputDir, String jobGroup, int inputSplits)
+    protected void repartition(JavaPairRDD<LongWritable, Text> rdd, String inputPath, String outputDir, String jobGroup, int inputSplits)
             throws IOException {
 
-        final JavaPairRDD<NullWritable, Text> rdd = compression.openUncompressed(inputPath)
+        final JavaPairRDD<NullWritable, Text> repartitionedRDD = compression.openUncompressed(inputPath)
                 .repartition(inputSplits)
                 .mapToPair(new RemoveKeyFunction());
 
         JobConf jobConf = new JobConf(context.hadoopConfiguration());
         context.setJobGroup("compression", jobGroup);
-        compression.compress(rdd, outputDir, jobConf);
+        compression.compress(repartitionedRDD, outputDir, jobConf);
     }
 
     private static class RemoveKeyFunction implements PairFunction<Tuple2<LongWritable, Text>, NullWritable, Text> {

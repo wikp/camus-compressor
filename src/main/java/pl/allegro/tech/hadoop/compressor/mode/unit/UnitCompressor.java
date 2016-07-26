@@ -4,13 +4,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.storage.StorageLevel;
 import pl.allegro.tech.hadoop.compressor.exception.InvalidCountsException;
 import pl.allegro.tech.hadoop.compressor.mode.Compress;
 import pl.allegro.tech.hadoop.compressor.util.InputAnalyser;
 
 import java.io.IOException;
 
-public abstract class UnitCompressor implements Compress {
+public abstract class UnitCompressor<K,V> implements Compress {
 
     private static final Logger logger = Logger.getLogger(UnitCompressor.class);
     private static final int BYTES_IN_KB = 1024;
@@ -52,9 +54,13 @@ public abstract class UnitCompressor implements Compress {
             logger.info(String.format("Compress unit %s to %s (%d KB)", unitPath, outputDir, inputSize / BYTES_IN_KB));
             String jobGroup = String.format("%s (%s)", unitPath, FileUtils.byteCountToDisplaySize(inputSize));
 
-            long beforeCount = countIfRequested(inputPath, inputPath);
-            repartition(inputPath, outputDir, jobGroup, inputAnalyser.countInputSplits(inputPath));
-            long afterCount = countIfRequested(outputDir, inputPath);
+            JavaPairRDD<K, V> inputRdd = countOutputDir(inputPath, inputPath);
+            inputRdd.persist(StorageLevel.MEMORY_AND_DISK());
+            long beforeCount = countIfRequested(inputRdd);
+            repartition(inputRdd, inputPath, outputDir, jobGroup, inputAnalyser.countInputSplits(inputPath));
+            inputRdd.unpersist();
+            JavaPairRDD<K, V> outputRdd = countOutputDir(outputDir, inputPath);
+            long afterCount = countIfRequested(outputRdd);
 
             if (beforeCount != afterCount) {
                 logger.error(String.format("Counts are different: %d vs. %d", beforeCount, afterCount));
@@ -70,17 +76,17 @@ public abstract class UnitCompressor implements Compress {
 
     }
 
-    private long countIfRequested(String countIn, String inputPath) throws IOException {
+    private long countIfRequested(JavaPairRDD<K,V> rdd) throws IOException {
         if (calcCounts) {
-            return countOutputDir(countIn, inputPath);
+            return rdd.count();
         } else {
             return -1L;
         }
     }
 
-    protected abstract long countOutputDir(String outputDir, String inputPath) throws IOException;
+    protected abstract JavaPairRDD<K,V> countOutputDir(String path, String schemaReaderPath) throws IOException;
 
-    protected abstract void repartition(String inputPath, String outputDir, String jobGroup, int inputSplits)
+    protected abstract void repartition(JavaPairRDD<K,V> rdd, String inputPath, String outputDir, String jobGroup, int inputSplits)
             throws IOException;
 
     private String getTemporaryDirPath(String hourPath) {
